@@ -367,15 +367,14 @@ def convert_xml_to_json(xml_string):
             if nil_attr == 'true':
                 is_nil = True
         
-        # Парсим дату партии
-        if date_party_str and not is_nil:
+        # Парсим дату партии для prodactiondate и name
+        prodactiondate = ""
+        name = ""
+        if date_party_str:
             date_party_str = date_party_str.split('.')[0]
             date_obj = datetime.fromisoformat(date_party_str)
             prodactiondate = date_obj.isoformat() + 'Z'
             name = date_obj.strftime('%d.%m.%Y')
-        else:
-            prodactiondate = ""
-            name = ""
             
         # Генерируем детерминированный UUID для batch.id только если не nil
         if is_nil:
