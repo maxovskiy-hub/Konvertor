@@ -359,8 +359,16 @@ def convert_xml_to_json(xml_string):
         qty = int(float(qty_text))
         date_party_str = row.findtext('ДатаПартии', '')
         
+        # Проверяем атрибут xsi:nil для ПартияКИС
+        party_elem = row.find('ПартияКИС')
+        is_nil = False
+        if party_elem is not None:
+            nil_attr = party_elem.get('{http://www.w3.org/2001/XMLSchema-instance}nil')
+            if nil_attr == 'true':
+                is_nil = True
+        
         # Парсим дату партии
-        if date_party_str:
+        if date_party_str and not is_nil:
             date_party_str = date_party_str.split('.')[0]
             date_obj = datetime.fromisoformat(date_party_str)
             prodactiondate = date_obj.isoformat() + 'Z'
@@ -369,8 +377,11 @@ def convert_xml_to_json(xml_string):
             prodactiondate = ""
             name = ""
             
-        # Генерируем детерминированный UUID для batch.id
-        batch_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{goodid}_{date_party_str}"))
+        # Генерируем детерминированный UUID для batch.id только если не nil
+        if is_nil:
+            batch_id = ""
+        else:
+            batch_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{goodid}_{date_party_str}"))
 
         orderrows.append({
             "insuranceprice": 0,
